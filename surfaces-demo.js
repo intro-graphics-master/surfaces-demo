@@ -90,20 +90,26 @@ export class Surfaces_Demo extends Scene
       let square_array = Vec.cast( [ 1,0,-1 ], [ 0,1,-1 ], [ -1,0,-1 ], [ 0,-1,-1 ], [ 1,0,-1 ] ),
             star_array = Array(19).fill( Vec.of( 1,0,-1 ) );
 
+      // Fill in the correct points for a 1D star curve:
+
       star_array   =   star_array.map( (x,i,a) => 
                     Mat4.rotation( i/(a.length-1) * 2*Math.PI, Vec.of( 0,0,1 ) )
             .times( Mat4.translation([ (i%2)/2,0,0 ]) )
             .times( x.to4(1) ).to3() );
 
-      // Now that we have two 1D curves, let's make a surface between them:
+      // The square is transformed away from the origin:
 
-      const transformation = j => Mat4.rotation( .5*j*Math.PI, Vec.of( 1,1,1 ) )
-                          .times( Mat4.translation([0,0,2*j]) );
+      square_array = square_array.map( (x,i,a) =>
+                           a[i] = Mat4.rotation( .5*Math.PI, Vec.of( 1,1,1 ) )
+                          .times( Mat4.translation([0,0,2]) )
+                          .times( x.to4(1) ).to3() );
+
+      // Now that we have two 1D curves, let's make a surface between them:
 
       let sampler1 = i => defs.Grid_Patch.sample_array( square_array, i );
       let sampler2 = i => defs.Grid_Patch.sample_array( star_array,   i );
 
-      let sample_two_arrays = (j,p,i) => transformation(j).times( sampler2(i).mix( sampler1(i), j ).to4(1) ).to3();
+      let sample_two_arrays = (j,p,i) => sampler2(i).mix( sampler1(i), j );
 
 
       this.shapes = { shell : new defs.Grid_Patch( 30, 30, sampler2, sample_two_arrays, [[0,1],[0,1]] )
