@@ -895,3 +895,19 @@ class Scene
   show_explanation( document_section )
     {}                            // show_explanation(): Called by Text_Widget for generating documentation.
 }
+
+
+window.a = [];
+window.b = Vec.of( 0,0,0,0 );
+
+for(let i = 0; i < 999; i++)
+{ window.b[0] = i;
+  window.b[1] = i*2;
+  window.b[2] = i*3;
+  window.b[3] = 1;
+  
+  window.a.push( Mat4.translation([ 3,2,1 ]).times( window.b ) );
+}
+
+console.log( window.a );
+debugger
