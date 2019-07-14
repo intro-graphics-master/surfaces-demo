@@ -1,7 +1,7 @@
 import {tiny, defs} from './common.js';
 
                                                   // Pull these names into this module's scope for convenience:
-const { Vec, Mat, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
+const { vec3, vec4, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
 
 export class Body
 {                                   // **Body** can store and update the properties of a 3D body that incrementally
@@ -11,10 +11,10 @@ export class Body
     { Object.assign( this, 
              { shape, material, size } )
     }
-  emplace( location_matrix, linear_velocity, angular_velocity, spin_axis = Vec.of(0,0,0).randomized(1).normalized() )
+  emplace( location_matrix, linear_velocity, angular_velocity, spin_axis = vec3( 0,0,0 ).randomized(1).normalized() )
     {                               // emplace(): assign the body's initial values, or overwrite them.
-      this.center   = location_matrix.times( Vec.of( 0,0,0,1 ) ).to3();
-      this.rotation = Mat4.translation( this.center.times( -1 ) ).times( location_matrix );
+      this.center   = location_matrix.times( vec4( 0,0,0,1 ) ).to3();
+      this.rotation = Mat4.translation( ...this.center.times( -1 ) ).times( location_matrix );
       this.previous = { center: this.center.copy(), rotation: this.rotation.copy() };
                                               // drawn_location gets replaced with an interpolated quantity:
       this.drawn_location = location_matrix;                                    
@@ -27,7 +27,7 @@ export class Body
                                                  // Apply the velocities scaled proportionally to real time (time_amount):
                                                  // Linear velocity first, then angular:
       this.center = this.center.plus( this.linear_velocity.times( time_amount ) );
-      this.rotation.pre_multiply( Mat4.rotation( time_amount * this.angular_velocity, this.spin_axis ) );
+      this.rotation.pre_multiply( Mat4.rotation( time_amount * this.angular_velocity, ...this.spin_axis ) );
     }
   blend_rotation( alpha )         
     {                        // blend_rotation(): Just naively do a linear blend of the rotations, which looks
@@ -35,15 +35,15 @@ export class Body
 
                                   // TODO:  Replace this function with proper quaternion blending, and perhaps 
                                   // store this.rotation in quaternion form instead for compactness.
-       return this.rotation.map( (x,i) => Vec.from( this.previous.rotation[i] ).mix( x, alpha ) );
+       return this.rotation.map( (x,i) => vec4( ...this.previous.rotation[i] ).mix( x, alpha ) );
     }
   blend_state( alpha )            
     {                             // blend_state(): Compute the final matrix we'll draw using the previous two physical
                                   // locations the object occupied.  We'll interpolate between these two states as 
                                   // described at the end of the "Fix Your Timestep!" blog post.
-      this.drawn_location = Mat4.translation( this.previous.center.mix( this.center, alpha ) )
+      this.drawn_location = Mat4.translation( ...this.previous.center.mix( this.center, alpha ) )
                                       .times( this.blend_rotation( alpha ) )
-                                      .times( Mat4.scale( this.size ) );
+                                      .times( Mat4.scale( ...this.size ) );
     }
                                               // The following are our various functions for testing a single point,
                                               // p, against some analytically-known geometric volume formula 
@@ -177,9 +177,9 @@ export class Inertia_Demo extends Simulation
                       // scene should do to its bodies every frame -- including applying forces.
                       // Generate additional moving bodies if there ever aren't enough:
       while( this.bodies.length < 150 )
-        this.bodies.push( new Body( this.data.random_shape(), this.random_color(), Vec.of( 1,1+Math.random(),1 ) )
-              .emplace( Mat4.translation( Vec.of(0,15,0).randomized(10) ),
-                        Vec.of(0,-1,0).randomized(2).normalized().times(3), Math.random() ) );
+        this.bodies.push( new Body( this.data.random_shape(), this.random_color(), vec3( 1,1+Math.random(),1 ) )
+              .emplace( Mat4.translation( ...vec3( 0,15,0 ).randomized(10) ),
+                        vec3( 0,-1,0 ).randomized(2).normalized().times(3), Math.random() ) );
       
       for( let b of this.bodies )
       {                                         // Gravity on Earth, where 1 unit in world space = 1 meter:
@@ -198,13 +198,13 @@ export class Inertia_Demo extends Simulation
       if( !context.scratchpad.controls ) 
         { this.children.push( context.scratchpad.controls = new defs.Movement_Controls() );
           this.children.push( new defs.Program_State_Viewer() );
-          program_state.set_camera( Mat4.translation([ 0,0,-50 ]) );    // Locate the camera here (inverted matrix).
+          program_state.set_camera( Mat4.translation( 0,0,-50 ) );    // Locate the camera here (inverted matrix).
           program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 500 );
         }
-      program_state.lights = [ new Light( Vec.of( 0,-5,-10,1 ), Color.of( 1,1,1,1 ), 100000 ) ];
+      program_state.lights = [ new Light( vec4( 0,-5,-10,1 ), Color.of( 1,1,1,1 ), 100000 ) ];
                                                                                               // Draw the ground:
-      this.shapes.square.draw( context, program_state, Mat4.translation([ 0,-10,0 ])
-                                       .times( Mat4.rotation( Math.PI/2, Vec.of( 1,0,0 ) ) ).times( Mat4.scale([ 50,50,1 ]) ),
+      this.shapes.square.draw( context, program_state, Mat4.translation( 0,-10,0 )
+                                       .times( Mat4.rotation( Math.PI/2, ...[ 1,0,0 ] ) ).times( Mat4.scale( 50,50,1 ) ),
                                this.material.override( this.data.textures.earth ) );
     }
   show_explanation( document_element )
@@ -251,10 +251,10 @@ export class Collision_Demo extends Simulation
                       // scene should do to its bodies every frame -- including applying forces.
                                                               // Generate moving bodies:
       while( this.bodies.length < num_bodies )
-        this.bodies.push( new Body( this.data.random_shape(), undefined, Vec.of( 1,5,1 ) )
-              .emplace(         Mat4.translation( Vec.of( 0,0,0 ).randomized(30) )
-                        .times( Mat4.rotation( Math.PI, Vec.of( 0,0,0 ).randomized(1).normalized() ) ),
-                        Vec.of( 0,0,0 ).randomized(20), Math.random() ) );
+        this.bodies.push( new Body( this.data.random_shape(), undefined, vec3( 1,5,1 ) )
+              .emplace(         Mat4.translation( ...vec3( 0,0,0 ).randomized(30) )
+                        .times( Mat4.rotation( Math.PI, ...vec3( 0,0,0 ).randomized(1).normalized() ) ),
+                        vec3( 0,0,0 ).randomized(20), Math.random() ) );
                                       // Sometimes we delete some so they can re-generate as new ones:                            
       this.bodies = this.bodies.filter( b => ( Math.random() > .01 ) || b.linear_velocity.norm() > 1 ); 
 
@@ -278,7 +278,7 @@ export class Collision_Demo extends Simulation
                                           // If we get here, we collided, so turn red and zero out the
                                           // velocity so they don't inter-penetrate any further.
             a.material = this.active_color;
-            a.linear_velocity  = Vec.of( 0,0,0 );
+            a.linear_velocity  = vec3( 0,0,0 );
             a.angular_velocity = 0;
           }
         }
@@ -289,17 +289,17 @@ export class Collision_Demo extends Simulation
       if( !context.scratchpad.controls ) 
         { this.children.push( context.scratchpad.controls = new defs.Movement_Controls() );
           this.children.push( new defs.Program_State_Viewer() );
-          program_state.set_camera( Mat4.translation([ 0,0,-50 ]) );    // Locate the camera here (inverted matrix).
+          program_state.set_camera( Mat4.translation( 0,0,-50 ) );    // Locate the camera here (inverted matrix).
           program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 500 );
         }
-      program_state.lights = [ new Light( Vec.of( .7,1.5,2,0 ), Color.of( 1,1,1,1 ), 100000 ) ];
+      program_state.lights = [ new Light( vec4( .7,1.5,2,0 ), Color.of( 1,1,1,1 ), 100000 ) ];
 
                                                                // Draw an extra bounding sphere around each drawn shape to show
                                                                // the physical shape that is really being collided with:
       const { points, leeway } = this.colliders[ this.collider_selection ];
-      const size = new Vec(3).fill( 1 + leeway );
+      const size = vec3( 1 + leeway, 1 + leeway, 1 + leeway );
       for( let b of this.bodies )
-        points.draw( context, program_state, b.drawn_location.times( Mat4.scale( size ) ), this.bright, "LINE_STRIP" );
+        points.draw( context, program_state, b.drawn_location.times( Mat4.scale( ...size ) ), this.bright, "LINE_STRIP" );
     }
   show_explanation( document_element )
     { document_element.innerHTML += `<p>This demo detects when some flying objects collide with one another, coloring them red when they do.  For a simpler demo that shows physics-based movement without objects that hit one another, see the demo called Inertia_Demo.

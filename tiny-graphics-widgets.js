@@ -1,7 +1,7 @@
 // This file defines a lot of panels that can be placed on websites to create interactive graphics programs that use tiny-graphics.js.
 
 import {tiny} from './tiny-graphics.js';
-const { Vec, Mat, Mat4, Color, Shape, Shader, Scene } = tiny;           // Pull these names into this module's scope for convenience.
+const { Color, Scene } = tiny;           // Pull these names into this module's scope for convenience.
 
 export const widgets = {};
 
@@ -28,7 +28,6 @@ class Canvas_Widget
       if( !this.show_canvas )
         canvas.style.display = "none";
 
-      this.patch_ios_bug();
       this.webgl_manager = new tiny.Webgl_Manager( canvas, Color.of( 0,0,0,1 ) );  // Second parameter sets background color.
 
       this.embedded_controls_area = this.element.appendChild( document.createElement( "div" ) );
@@ -44,16 +43,6 @@ class Canvas_Widget
 
                                        // Start WebGL initialization.  Note that render() will re-queue itself for continuous calls.
       this.webgl_manager.render();
-    }
-  patch_ios_bug()
-    {                                           // patch_ios_bug():  Correct a flaw in Webkit (iPhone devices; safari mobile) that
-                                                // breaks TypedArray.from() and TypedArray.of() in subclasses.  Bug report:
-                                                // https://bugs.webkit.org/show_bug.cgi?id=181011
-      try{ Vec.of( 1,2,3 ).times(2) }
-      catch 
-      { Vec.of   = function( ...arr ) { return new Vec( Array.from( ...arr ) ) }
-        Vec.from = function(    arr ) { return new Vec( Array.from(    arr ) ) }
-      }
     }
 }
 
