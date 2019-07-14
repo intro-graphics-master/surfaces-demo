@@ -247,7 +247,8 @@ class Matrix extends Array
       }
       let result = optional_preallocated_result || Matrix.from( new Array( this.length ) );
       for( let r = 0; r < this.length; r++ )                                         // Matrix * Matrix case.
-      { result[ r ] = new Array( len2 );
+      { if( !optional_preallocated_result )
+          result[ r ] = new Array( len2 );
         for( let c = 0, sum = 0; c < len2; c++ )
         { result[ r ][ c ] = 0;
           for( let r2 = 0; r2 < len; r2++ )

@@ -17,7 +17,8 @@ export class Body
       this.rotation = Mat4.translation( ...this.center.times( -1 ) ).times( location_matrix );
       this.previous = { center: this.center.copy(), rotation: this.rotation.copy() };
                                               // drawn_location gets replaced with an interpolated quantity:
-      this.drawn_location = location_matrix;                                    
+      this.drawn_location = location_matrix;
+      this.temp_matrix = Mat4.identity();
       return Object.assign( this, { linear_velocity, angular_velocity, spin_axis } )
     }
   advance( time_amount ) 
@@ -64,13 +65,14 @@ export class Body
       if ( this == b ) 
         return false;                     // Nothing collides with itself.
                                           // Convert sphere b to the frame where a is a unit sphere:
-      var T = this.inverse.times( b.drawn_location );
+      const T = this.inverse.times( b.drawn_location, this.temp_matrix );
 
       const { intersect_test, points, leeway } = collider;
                                           // For each vertex in that b, shift to the coordinate frame of
                                           // a_inv*b.  Check if in that coordinate frame it penetrates 
                                           // the unit sphere at the origin.  Leave some leeway.
-      return points.arrays.position.some( p => intersect_test( T.times( p.to4(1) ).to3(), leeway ) );
+      return points.arrays.position.some( p => 
+        intersect_test( T.times( p.to4(1) ).to3(), leeway ) );
     }
 }
 
@@ -254,7 +256,7 @@ export class Collision_Demo extends Simulation
         this.bodies.push( new Body( this.data.random_shape(), undefined, vec3( 1,5,1 ) )
               .emplace(         Mat4.translation( ...unsafe3( 0,0,0 ).randomized(30) )
                         .times( Mat4.rotation( Math.PI, ...unsafe3( 0,0,0 ).randomized(1).normalized() ) ),
-                        vec3( 0,0,0 ).randomized(20), Math.random() ) );
+                        unsafe3( 0,0,0 ).randomized(20), Math.random() ) );
                                       // Sometimes we delete some so they can re-generate as new ones:                            
       this.bodies = this.bodies.filter( b => ( Math.random() > .01 ) || b.linear_velocity.norm() > 1 ); 
 
