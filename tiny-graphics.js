@@ -245,16 +245,50 @@ class Matrix extends Array
         for( let r=0; r < len; r++ ) result[r] = b.dot(this[r]);                      
         return result;
       }
-      let result = optional_preallocated_result || Matrix.from( new Array( this.length ) );
-      for( let r = 0; r < this.length; r++ )                                         // Matrix * Matrix case.
-      { if( !optional_preallocated_result )
-          result[ r ] = new Array( len2 );
-        for( let c = 0, sum = 0; c < len2; c++ )
-        { result[ r ][ c ] = 0;
-          for( let r2 = 0; r2 < len; r2++ )
-            result[ r ][ c ] += this[ r ][ r2 ] * b[ r2 ][ c ];
-        }
-      }
+      //let result = optional_preallocated_result || Matrix.from( new Array( this.length ) );
+
+let result = optional_preallocated_result
+if( !optional_preallocated_result )
+{ result = Matrix.from( new Array( this.length ) );
+  for( let r = 0; r < this.length; r++ )
+    result[ r ] = new Array( len2 );
+}
+result[0][0] = this[0][0] * b[0][0] + this[0][1] * b[1][0] + this[0][2] * b[2][0] + this[0][3] * b[3][0]; 
+result[0][1] = this[0][0] * b[0][1] + this[0][1] * b[1][1] + this[0][2] * b[2][1] + this[0][3] * b[3][1]; 
+result[0][2] = this[0][0] * b[0][2] + this[0][1] * b[1][2] + this[0][2] * b[2][2] + this[0][3] * b[3][2]; 
+result[0][3] = this[0][0] * b[0][3] + this[0][1] * b[1][3] + this[0][2] * b[2][3] + this[0][3] * b[3][3]; 
+result[1][0] = this[1][0] * b[0][0] + this[1][1] * b[1][0] + this[1][2] * b[2][0] + this[1][3] * b[3][0]; 
+result[1][1] = this[1][0] * b[0][1] + this[1][1] * b[1][1] + this[1][2] * b[2][1] + this[1][3] * b[3][1]; 
+result[1][2] = this[1][0] * b[0][2] + this[1][1] * b[1][2] + this[1][2] * b[2][2] + this[1][3] * b[3][2]; 
+result[1][3] = this[1][0] * b[0][3] + this[1][1] * b[1][3] + this[1][2] * b[2][3] + this[1][3] * b[3][3]; 
+result[2][0] = this[2][0] * b[0][0] + this[2][1] * b[1][0] + this[2][2] * b[2][0] + this[2][3] * b[3][0]; 
+result[2][1] = this[2][0] * b[0][1] + this[2][1] * b[1][1] + this[2][2] * b[2][1] + this[2][3] * b[3][1]; 
+result[2][2] = this[2][0] * b[0][2] + this[2][1] * b[1][2] + this[2][2] * b[2][2] + this[2][3] * b[3][2]; 
+result[2][3] = this[2][0] * b[0][3] + this[2][1] * b[1][3] + this[2][2] * b[2][3] + this[2][3] * b[3][3]; 
+result[3][0] = this[3][0] * b[0][0] + this[3][1] * b[1][0] + this[3][2] * b[2][0] + this[3][3] * b[3][0]; 
+result[3][1] = this[3][0] * b[0][1] + this[3][1] * b[1][1] + this[3][2] * b[2][1] + this[3][3] * b[3][1]; 
+result[3][2] = this[3][0] * b[0][2] + this[3][1] * b[1][2] + this[3][2] * b[2][2] + this[3][3] * b[3][2]; 
+result[3][3] = this[3][0] * b[0][3] + this[3][1] * b[1][3] + this[3][2] * b[2][3] + this[3][3] * b[3][3]; 
+
+
+
+
+
+
+
+
+//       for( let r = 0; r < this.length; r++ )                                         // Matrix * Matrix case.
+//       { if( !optional_preallocated_result )
+//           result[ r ] = new Array( len2 );
+//         for( let c = 0; c < len2; c++ )
+//         { result[ r ][ c ] = 0;
+//           for( let r2 = 0; r2 < len; r2++ )
+//            // result[ r ][ c ] += this[ r ][ r2 ] * b[ r2 ][ c ];
+//             result[ r ][ c ] += 1;//this[ r ][ r2 ] * b[ r2 ][ c ];
+//         }
+//       }
+
+
       return result;
     }
   pre_multiply (b) { const new_value = b.times( this ); this.length = 0; this.push( ...new_value ); return this; }
