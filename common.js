@@ -762,7 +762,7 @@ class Movement_Controls extends Scene
       document.addEventListener( "mouseup",   e => { this.mouse.anchor = undefined; } );
       canvas  .addEventListener( "mousedown", e => { e.preventDefault(); this.mouse.anchor      = mouse_position(e); } );
       canvas  .addEventListener( "mousemove", e => { e.preventDefault(); this.mouse.from_center = mouse_position(e); } );
-      canvas  .addEventListener( "mouseout",  e => { if( !this.mouse.anchor ) this.mouse.from_center.scale(0) } );
+      canvas  .addEventListener( "mouseout",  e => { if( !this.mouse.anchor ) this.mouse.from_center.scale_by(0) } );
     }
   show_explanation( document_element ) { }
   make_control_panel()

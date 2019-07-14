@@ -64,23 +64,23 @@ class Vector extends Float32Array
   equals     (b) { return this.every( (x,i) => x == b[i]                ) }
   plus       (b) { return this.map(   (x,i) => x +  b[i]                ) }
   minus      (b) { return this.map(   (x,i) => x -  b[i]                ) }
-  mult_pairs (b) { return this.map(   (x,i) => x *  b[i]                ) }
-  scale      (s) { this.forEach(  (x, i, a) => a[i] *= s                ) }
+  times_pairwise (b) { return this.map(   (x,i) => x *  b[i]                ) }
+  scale_by   (s) { this.forEach(  (x, i, a) => a[i] *= s                ) }
   times      (s) { return this.map(       x => s*x                      ) }
   randomized (s) { return this.map(       x => x + s*(Math.random()-.5) ) }
   mix     (b, s) { return this.map(   (x,i) => (1-s)*x + s*b[i]         ) }
   norm        () { return Math.sqrt( this.dot( this )                   ) }
   normalized  () { return this.times( 1/this.norm()                     ) }
-  normalize   () {        this.scale( 1/this.norm()                     ) }
+  normalize   () {        this.scale_by( 1/this.norm()                     ) }
   dot(b)
     { if( this.length == 2 )                    // Optimize for Vectors of size 2
         return this[0]*b[0] + this[1]*b[1];  
       return this.reduce( ( acc, x, i ) => { return acc + x*b[i]; }, 0 );
     }                                       
   static cast( ...args ) { return args.map( x => Vector.from(x) ); } // For compact syntax when declaring lists.
-  to3()             { return Vector.of( this[0], this[1], this[2]              ); }
-  to4( is_a_point ) { return Vector.of( this[0], this[1], this[2], +is_a_point ); }
-  cross(b) { return Vector.of( this[1]*b[2] - this[2]*b[1], this[2]*b[0] - this[0]*b[2], this[0]*b[1] - this[1]*b[0] ); }
+  to3()             { return vec3( this[0], this[1], this[2]              ); }
+  to4( is_a_point ) { return vec4( this[0], this[1], this[2], +is_a_point ); }
+  cross(b) { return vec3( this[1]*b[2] - this[2]*b[1], this[2]*b[0] - this[0]*b[2], this[0]*b[1] - this[1]*b[0] ); }
   to_string() { return "[vector " + this.join( ", " ) + "]" }
 }
 
@@ -98,7 +98,7 @@ class Vector3 extends Float32Array
   equals(b) { return this[0] == b[0] && this[1] == b[1] && this[2] == b[2] }
   plus  (b) { return vec3( this[0]+b[0], this[1]+b[1], this[2]+b[2] ) }
   minus (b) { return vec3( this[0]-b[0], this[1]-b[1], this[2]-b[2] ) }
-  times (s) { return vec3( this[0]*s, this[1]*s, this[2]*s ) }
+  times (s) { return vec3( this[0]*s,    this[1]*s,    this[2]*s    ) }
   times_pairwise(b) { return vec3( this[0]*b[0], this[1]*b[1], this[2]*b[2] ) }
                                             // Pre-fix operations: Use these for better performance (to avoid new allocation).  
   add_by    (b) { this[0] += s;  this[1] += s;  this[2] += s }
@@ -138,12 +138,15 @@ class Vector3 extends Float32Array
     {                // unsafe(): returns vec3s only meant to be consumed immediately. Aliases into 
                      // shared memory, to be overwritten upon next unsafe3 call.  Fast.
       const shared_memory = vec3( 0,0,0 );
-      Vec3.unsafe = ( x,y,z ) =>
-        { shared_memory[0] = x;  shared_memory[1] = y;  shared_memory[2] = z; }
+      Vector3.unsafe = ( x,y,z ) =>
+        { shared_memory[0] = x;  shared_memory[1] = y;  shared_memory[2] = z;
+          return shared_memory;
+        }
+      return Vector3.unsafe( x,y,z );
     }
   to4( is_a_point )
                     // to4():  Convert to a homogeneous vector of 4 values.
-    { return vec3( this[0], this[1], this[2], +is_a_point ) }
+    { return vec4( this[0], this[1], this[2], +is_a_point ) }
   to_string() { return "[vec3 " + this.join( ", " ) + "]" }
 }
 
@@ -166,6 +169,7 @@ class Vector4 extends Vector3
                    (1-s)*this[2] + s*b[2], 
                    (1-s)*this[3] + s*b[3] );
     }
+  dot( b ) { return this[0]*b[0] + this[1]*b[1] + this[2]*b[2] + this[3]*b[3] }
   copy() { return Vector4.from( this ) }
   static unsafe( x,y,z,w )
     {                // **unsafe** Returns vec3s to be used immediately only. Aliases into 
@@ -184,6 +188,13 @@ const vec3    = tiny.vec3    = Vector3.create;
 const vec4    = tiny.vec4    = Vector4.create;
 const unsafe3 = tiny.unsafe3 = Vector3.unsafe;
 const unsafe4 = tiny.unsafe4 = Vector4.unsafe;
+
+
+// const vec     = tiny.vec     = Vector .create;
+// const vec3    = tiny.vec3    = Vector .create;
+// const vec4    = tiny.vec4    = Vector .create;
+// const unsafe3 = tiny.unsafe3 = Vector .create;
+// const unsafe4 = tiny.unsafe4 = Vector .create;
 
 
 const Matrix = tiny.Matrix =

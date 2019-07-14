@@ -1,7 +1,7 @@
 import {tiny, defs} from './common.js';
 
                                                   // Pull these names into this module's scope for convenience:
-const { vec3, vec4, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
+const { vec3, unsafe3, vec4, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
 
 export class Body
 {                                   // **Body** can store and update the properties of a 3D body that incrementally
@@ -252,8 +252,8 @@ export class Collision_Demo extends Simulation
                                                               // Generate moving bodies:
       while( this.bodies.length < num_bodies )
         this.bodies.push( new Body( this.data.random_shape(), undefined, vec3( 1,5,1 ) )
-              .emplace(         Mat4.translation( ...vec3( 0,0,0 ).randomized(30) )
-                        .times( Mat4.rotation( Math.PI, ...vec3( 0,0,0 ).randomized(1).normalized() ) ),
+              .emplace(         Mat4.translation( ...unsafe3( 0,0,0 ).randomized(30) )
+                        .times( Mat4.rotation( Math.PI, ...unsafe3( 0,0,0 ).randomized(1).normalized() ) ),
                         vec3( 0,0,0 ).randomized(20), Math.random() ) );
                                       // Sometimes we delete some so they can re-generate as new ones:                            
       this.bodies = this.bodies.filter( b => ( Math.random() > .01 ) || b.linear_velocity.norm() > 1 ); 
