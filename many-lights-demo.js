@@ -1,6 +1,6 @@
 import {tiny, defs} from './common.js';
                                             // Pull these names into this module's scope for convenience:
-const { Vec, Mat, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
+const { vec3, vec4, color, Mat4, Light, Shape, Material, Shader, Texture, Scene } = tiny;
 
 export class Many_Lights_Demo extends Scene
 {                             // **Many_Lights_Demo** demonstrates how to make the illusion that 
@@ -16,7 +16,7 @@ export class Many_Lights_Demo extends Scene
 
       this.shapes = { cube: new defs.Cube() };
       const shader = new defs.Fake_Bump_Map();
-      this.brick = new Material( shader, { color: Color.of( 1,1,1,1 ),
+      this.brick = new Material( shader, { color: color( 1,1,1,1 ),
                                  ambient: .05, diffusivity: .5, specularity: .5, smoothness: 10, 
                                  texture: new Texture( "assets/rgb.jpg" ) });
               
@@ -24,30 +24,28 @@ export class Many_Lights_Demo extends Scene
                               // Make initial grid of boxes at random heights:
       for(   let row = 0;       row < this.rows;       row++ ) 
         for( let column = 0; column < this.columns; column++ )
-          this.box_positions.push( Vec.of( row, -2-2*Math.random(), -column ).randomized(1) );
+          this.box_positions.push( vec3( row, -2-2*Math.random(), -column ).randomized( 1 ) );
 
         // The lights lists will function as a lookup table for the light in a current row and column:
         // Make initial light positions.  One light per row, and one light per column:
       for( let c = 0; c < this.columns; c++ )
-        this.row_lights    [ ~~(-c) ] = Vec.of( 2*Math.random()*this.rows, -Math.random(), -c     );
+        this.row_lights    [ ~~(-c) ] = vec3( 2*Math.random()*this.rows, -Math.random(), -c     );
       for( let r = 0; r < this.rows;    r++ )
-        this.column_lights [ ~~( r) ] = Vec.of( r, -Math.random(), -2*Math.random()*this.columns  );
+        this.column_lights [ ~~( r) ] = vec3( r, -Math.random(), -2*Math.random()*this.columns  );
     }
   display( context, program_state )
     {                                         // display():  Draw each frame to animate the scene.
-      program_state.set_camera( Mat4.look_at( ...Vec.cast( [ this.rows/2,5,5 ], [this.rows/2,0,-4], [0,1,0] ) ) );
+      program_state.set_camera( Mat4.look_at( vec3( this.rows/2,5,5 ), vec3( this.rows/2,0,-4 ), vec3( 0,1,0 ) ) );
       program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 500 );
       
                                     // To draw each individual box, select the two lights sharing 
                                     // a row and column with it, and draw using those.
       this.box_positions.forEach( (p,i,a) =>
-        { program_state.lights = [ new Light( this.row_lights   [ ~~p[2] ].to4(1), Color.of( p[2]%1,1,1,1 ), 9 ),
-                                   new Light( this.column_lights[ ~~p[0] ].to4(1), Color.of( 1,1,p[0]%1,1 ), 9 )];
+        { program_state.lights = [ new Light( this.row_lights   [ ~~p[2] ].to4(1), color( p[2]%1,1,1,1 ), 9 ),
+                                   new Light( this.column_lights[ ~~p[0] ].to4(1), color( 1,1,p[0]%1,1 ), 9 ) ];
                                             // Draw the box:
-          this.shapes.cube.draw( context, program_state, Mat4.translation( p ).times( Mat4.scale([ .3,1,.3 ]) ), this.brick )
+          this.shapes.cube.draw( context, program_state, Mat4.translation( ...p ).times( Mat4.scale( .3,1,.3 ) ), this.brick )
         } );
-      if( !program_state.animate || program_state.animation_delta_time > 500 ) return;
-      console.log( program_state.animation_delta_time );
                               // Move some lights forward along columns, then bound them to a range.
       for( const [key,val] of Object.entries( this.column_lights ) )
         { this.column_lights[key][2] -= program_state.animation_delta_time/50;
@@ -60,7 +58,7 @@ export class Many_Lights_Demo extends Scene
         }
                               // Move the boxes backwards, then bound them to a range.
       this.box_positions.forEach( (p,i,a) =>
-        { a[i] = p.plus( Vec.of( 0,0,program_state.animation_delta_time/1000 ) );
+        { a[i] = p.plus( vec3( 0,0,program_state.animation_delta_time/1000 ) );
           if( a[i][2] > 1 ) a[i][2] = -this.columns + .001;
         } );
     }                                                        
