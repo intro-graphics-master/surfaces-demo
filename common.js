@@ -1,6 +1,7 @@
 import {tiny} from './tiny-graphics.js';
                                                   // Pull these names into this module's scope for convenience:
-const { Vector, Vector3, vec, vec3, vec4, Matrix, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
+const { Vector, Vector3, vec, vec3, vec4, color, Matrix, Mat4, 
+         Light, Shape, Material, Shader, Texture, Scene } = tiny;
 
 import {widgets} from './tiny-graphics-widgets.js';
 Object.assign( tiny, widgets );
@@ -110,7 +111,7 @@ class Windmill extends Shape
                                                       // A for loop to automatically generate the triangles:
       for( let i = 0; i < num_blades; i++ )
         {                                      // Rotate around a few degrees in the XZ plane to place each new point:
-          const spin = Mat4.rotation( i * 2*Math.PI/num_blades, ...[ 0,1,0 ] );
+          const spin = Mat4.rotation( i * 2*Math.PI/num_blades,   0,1,0 );
                                                // Apply that XZ rotation matrix to point (1,0,0) of the base triangle.
           const newPoint  = spin.times( Vec.of( 1,0,0,1 ) ).to3();
           const triangle = [ newPoint,                      // Store that XZ position as point 1.
@@ -143,8 +144,8 @@ class Cube extends Shape
                           // Loop 3 times (for each axis), and inside loop twice (for opposing cube sides):
       for( var i = 0; i < 3; i++ )
         for( var j = 0; j < 2; j++ )
-        { var square_transform = Mat4.rotation( i == 0 ? Math.PI/2 : 0, ...[ 1,0,0 ] )
-                         .times( Mat4.rotation( Math.PI * j - ( i == 1 ? Math.PI/2 : 0 ), ...[ 0,1,0 ] ) )
+        { var square_transform = Mat4.rotation( i == 0 ? Math.PI/2 : 0,    1,0,0 )
+                         .times( Mat4.rotation( Math.PI * j - ( i == 1 ? Math.PI/2 : 0 ),   0,1,0 ) )
                          .times( Mat4.translation( 0,0,1 ) );
                                   // Calling this function of a Square (or any Shape) copies it into the specified
                                   // Shape (this one) at the specified matrix offset (square_transform):
@@ -294,7 +295,7 @@ class Surface_Of_Revolution extends Grid_Patch
                                                     // we have a flexible "generalized cylinder" spanning an area until total_curvature_angle.
   constructor( rows, columns, points, texture_coord_range, total_curvature_angle = 2*Math.PI )
     { const row_operation =     i => Grid_Patch.sample_array( points, i ),
-         column_operation = (j,p) => Mat4.rotation( total_curvature_angle/columns, ...[ 0,0,1 ] ).times(p.to4(1)).to3();
+         column_operation = (j,p) => Mat4.rotation( total_curvature_angle/columns,   0,0,1 ).times(p.to4(1)).to3();
          
        super( rows, columns, row_operation, column_operation, texture_coord_range );
     }
@@ -322,7 +323,7 @@ class Torus extends Shape                                         // Build a don
       { super( "position", "normal", "texture_coord" );
         const circle_points = Array( rows ).fill( vec3( 1/3,0,0 ) )
                                            .map( (p,i,a) => Mat4.translation( -2/3,0,0 )
-                                                    .times( Mat4.rotation( i/(a.length-1) * 2*Math.PI, ...[ 0,-1,0 ] ) )
+                                                    .times( Mat4.rotation( i/(a.length-1) * 2*Math.PI,   0,-1,0 ) )
                                                     .times( Mat4.scale( 1,1,3 ) )
                                                     .times( p.to4(1) ).to3() );
 
@@ -334,7 +335,7 @@ class Grid_Sphere extends Shape                  // With lattitude / longitude d
   { constructor( rows, columns, texture_range )         // the mesh's top and bottom.  Subdivision_Sphere is a better alternative.
       { super( "position", "normal", "texture_coord" );
         const semi_circle_points = Array( rows ).fill( Vec.of( 0,0,1 ) ).map( (x,i,a) =>
-                                     Mat4.rotation( i/(a.length-1) * Math.PI, ...[ 0,1,0 ] ).times( x.to4(1) ).to3() );
+                                     Mat4.rotation( i/(a.length-1) * Math.PI,   0,1,0 ).times( x.to4(1) ).to3() );
         
         Surface_Of_Revolution.insert_transformed_copy_into( this, [ rows, columns, semi_circle_points, texture_range ] );
       } }
@@ -344,7 +345,7 @@ class Closed_Cone extends Shape     // Combine a cone tip and a regular polygon 
   { constructor( rows, columns, texture_range )
       { super( "position", "normal", "texture_coord" );
         Cone_Tip          .insert_transformed_copy_into( this, [ rows, columns, texture_range ]);    
-        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ], Mat4.rotation( Math.PI, ...[ 0,1,0 ] )
+        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ], Mat4.rotation( Math.PI,   0,1,0 )
                                                                        .times( Mat4.translation( 0,0,1 ) ) ); } }
 
 const Rounded_Closed_Cone = defs.Rounded_Closed_Cone =
@@ -357,7 +358,7 @@ class Capped_Cylinder extends Shape                // Combine a tube and two reg
       { super( "position", "normal", "texture_coord" );
         Cylindrical_Tube  .insert_transformed_copy_into( this, [ rows, columns, texture_range ] );
         Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ],                                              Mat4.translation( 0,0,.5 ) );
-        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ], Mat4.rotation( Math.PI, ...[ 0,1,0] ).times( Mat4.translation( 0,0,.5 ) ) ); } }
+        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ], Mat4.rotation( Math.PI,   0,1,0 ).times( Mat4.translation( 0,0,.5 ) ) ); } }
 
 const Rounded_Capped_Cylinder = defs.Rounded_Capped_Cylinder =
 class Rounded_Capped_Cylinder extends Surface_Of_Revolution   // An alternative without three separate sections
@@ -369,10 +370,10 @@ class Axis_Arrows extends Shape                               // An axis set wit
 { constructor()
     { super( "position", "normal", "texture_coord" );
       var stack = [];       
-      Subdivision_Sphere.insert_transformed_copy_into( this, [ 3 ], Mat4.rotation( Math.PI/2, ...[  0,1,0 ] ).times( Mat4.scale( .25, .25, .25 ) ) );
-      this.drawOneAxis( Mat4.identity(),                                                         [[ .67, 1  ], [ 0,1 ]] );
-      this.drawOneAxis( Mat4.rotation(-Math.PI/2, ...[ 1,0,0 ]).times( Mat4.scale(  1, -1, 1 )), [[ .34,.66 ], [ 0,1 ]] );
-      this.drawOneAxis( Mat4.rotation( Math.PI/2, ...[ 0,1,0 ]).times( Mat4.scale( -1,  1, 1 )), [[  0 ,.33 ], [ 0,1 ]] ); 
+      Subdivision_Sphere.insert_transformed_copy_into( this, [ 3 ], Mat4.rotation( Math.PI/2,    0,1,0 ).times( Mat4.scale( .25, .25, .25 ) ) );
+      this.drawOneAxis( Mat4.identity(),                                                     [[ .67, 1  ], [ 0,1 ]] );
+      this.drawOneAxis( Mat4.rotation(-Math.PI/2,   1,0,0 ).times( Mat4.scale(  1, -1, 1 )), [[ .34,.66 ], [ 0,1 ]] );
+      this.drawOneAxis( Mat4.rotation( Math.PI/2,   0,1,0 ).times( Mat4.scale( -1,  1, 1 )), [[  0 ,.33 ], [ 0,1 ]] ); 
     }
   drawOneAxis( transform, tex )    // Use a different texture coordinate range for each of the three axes, so they show up differently.
     { Closed_Cone     .insert_transformed_copy_into( this, [ 4, 10, tex ], transform.times( Mat4.translation(   0,   0,  2 ) ).times( Mat4.scale( .25, .25, .25 ) ) );
@@ -392,7 +393,7 @@ class Minimal_Shape extends tiny.Vertex_Buffer
     { super( "position", "color" );
               // Describe the where the points of a triangle are in space, and also describe their colors:
       this.arrays.position = [ Vec.of(0,0,0), Vec.of(1,0,0), Vec.of(0,1,0) ];
-      this.arrays.color    = [ Color.of(1,0,0,1), Color.of(0,1,0,1), Color.of(0,0,1,1) ];
+      this.arrays.color    = [ color(1,0,0,1), color(0,1,0,1), color(0,0,1,1) ];
     }
 }
 
@@ -631,7 +632,7 @@ class Phong_Shader extends Shader
                   // within this function, one data field at a time, to fully initialize the shader for a draw.                  
       
                   // Fill in any missing fields in the Material object with custom defaults for this shader:
-      const defaults = { color: Color.of( 0,0,0,1 ), ambient: 0, diffusivity: 1, specularity: 1, smoothness: 40 };
+      const defaults = { color: color( 0,0,0,1 ), ambient: 0, diffusivity: 1, specularity: 1, smoothness: 40 };
       material = Object.assign( {}, defaults, material );
 
       this.send_material ( context, gpu_addresses, material );
@@ -839,11 +840,11 @@ class Movement_Controls extends Scene
           let o = offsets_from_dead_box,
             velocity = ( ( o.minus[i] > 0 && o.minus[i] ) || ( o.plus[i] < 0 && o.plus[i] ) ) * radians_per_frame;
                                               // On X step, rotate around Y axis, and vice versa.
-          this.matrix().post_multiply( Mat4.rotation( -velocity, ...[ i, 1-i, 0 ] ) );
-          this.inverse().pre_multiply( Mat4.rotation( +velocity, ...[ i, 1-i, 0 ] ) );
+          this.matrix().post_multiply( Mat4.rotation( -velocity,   i, 1-i, 0 ) );
+          this.inverse().pre_multiply( Mat4.rotation( +velocity,   i, 1-i, 0 ) );
         }
-      this.matrix().post_multiply( Mat4.rotation( -.1 * this.roll, ...[ 0,0,1 ] ) );
-      this.inverse().pre_multiply( Mat4.rotation( +.1 * this.roll, ...[ 0,0,1 ] ) );
+      this.matrix().post_multiply( Mat4.rotation( -.1 * this.roll,   0,0,1 ) );
+      this.inverse().pre_multiply( Mat4.rotation( +.1 * this.roll,   0,0,1 ) );
                                     // Now apply translation movement of the camera, in the newest local coordinate frame.
       this.matrix().post_multiply( Mat4.translation( ...this.thrust.times( -meters_per_frame ) ) );
       this.inverse().pre_multiply( Mat4.translation( ...this.thrust.times( +meters_per_frame ) ) );
@@ -858,7 +859,7 @@ class Movement_Controls extends Scene
       this.inverse().pre_multiply( Mat4.translation( 0,0, +25 ) );
 
       const rotation = Mat4.rotation( radians_per_frame * dragging_vector.norm(), 
-                                                  ...[ dragging_vector[1], dragging_vector[0], 0 ] );
+                                                  dragging_vector[1], dragging_vector[0], 0 );
       this.matrix().post_multiply( rotation );
       this.inverse().pre_multiply( rotation );
 

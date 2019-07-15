@@ -188,6 +188,9 @@ const vec3    = tiny.vec3    = Vector3.create;
 const vec4    = tiny.vec4    = Vector4.create;
 const unsafe3 = tiny.unsafe3 = Vector3.unsafe;
 const unsafe4 = tiny.unsafe4 = Vector4.unsafe;
+      // **Color** is just an alias for class Vector4.  Colors should be made as special 4x1
+      // vectors expressed as ( red, green, blue, opacity ) each ranging from 0 to 1.
+const color   = tiny.color   = Vector4.create;
 
 
 // const vec     = tiny.vec     = Vector .create;
@@ -635,6 +638,7 @@ class Shape extends Vertex_Buffer
     }
 }
 
+
 const Light = tiny.Light =
 class Light
 {                         // **Light** stores the properties of one light in a scene.  Contains a coordinate and a
@@ -646,10 +650,6 @@ class Light
   constructor( position, color, size ) { Object.assign( this, { position, color, attenuation: 1/size } ); }
 }
 
-const Color = tiny.Color =
-class Color extends Vector4
-{    // **Color** is just an alias for class Vector4.  Colors should be made as special 4x1
-}    // vectors expressed as ( red, green, blue, opacity ) each ranging from 0 to 1.
 
 const Graphics_Addresses = tiny.Graphics_Addresses =
 class Graphics_Addresses

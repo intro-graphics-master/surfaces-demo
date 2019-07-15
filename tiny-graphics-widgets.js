@@ -1,7 +1,7 @@
 // This file defines a lot of panels that can be placed on websites to create interactive graphics programs that use tiny-graphics.js.
 
 import {tiny} from './tiny-graphics.js';
-const { Color, Scene } = tiny;           // Pull these names into this module's scope for convenience.
+const { color, Scene } = tiny;           // Pull these names into this module's scope for convenience.
 
 export const widgets = {};
 
@@ -28,7 +28,7 @@ class Canvas_Widget
       if( !this.show_canvas )
         canvas.style.display = "none";
 
-      this.webgl_manager = new tiny.Webgl_Manager( canvas, Color.of( 0,0,0,1 ) );  // Second parameter sets background color.
+      this.webgl_manager = new tiny.Webgl_Manager( canvas, color( 0,0,0,1 ) );  // Second parameter sets background color.
 
       this.embedded_controls_area = this.element.appendChild( document.createElement( "div" ) );
       this.embedded_controls_area.className = "controls-widget";
