@@ -1,6 +1,6 @@
 import {tiny, defs} from './common.js';
                                                   // Pull these names into this module's scope for convenience:
-const { Vec, Mat, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
+const { vec3, vec4, color, Mat4, Light, Shape, Material, Shader, Texture, Scene } = tiny;
 
 export class Scene_To_Texture_Demo extends Scene
   {                   // **Scene_To_Texture_Demo** is a crude way of doing multi-pass rendering.
@@ -21,7 +21,7 @@ export class Scene_To_Texture_Demo extends Scene
                         axis:  new defs.Axis_Arrows()
                       }
                                                 // Scale the texture coordinates:
-        this.shapes.box_2.arrays.texture_coord.forEach( p => p.scale( 2 ) );
+        this.shapes.box_2.arrays.texture_coord.forEach( p => p.scale_by( 2 ) );
 
         this.scratchpad = document.createElement('canvas');
                                     // A hidden canvas for re-sizing the real canvas to be square:
@@ -38,8 +38,8 @@ export class Scene_To_Texture_Demo extends Scene
           }
 
         this.spin = 0;
-        this.cube_1 = Mat4.translation([ -2,0,0 ]);
-        this.cube_2 = Mat4.translation([  2,0,0 ]);
+        this.cube_1 = Mat4.translation( -2,0,0 );
+        this.cube_2 = Mat4.translation(  2,0,0 );
       }
     make_control_panel()
       { this.key_triggered_button( "Cube rotation",  [ "c" ], () => this.spin ^= 1 );
@@ -51,17 +51,17 @@ export class Scene_To_Texture_Demo extends Scene
       }
     display( context, program_state )
       {                                 // display():  Draw both scenes, clearing the buffer in between.
-        program_state.lights = [ new Light( Vec.of( -5,5,5,1 ), Color.of( 0,1,1,1 ), 100000 ) ];
+        program_state.lights = [ new Light( vec4( -5,5,5,1 ), color( 0,1,1,1 ), 100000 ) ];
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
 
         if( !context.scratchpad.controls ) 
-        { program_state.set_camera( Mat4.look_at( Vec.of( 0,0,5 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
+        { program_state.set_camera( Mat4.look_at( vec3( 0,0,5 ), vec3( 0,0,0 ), vec3( 0,1,0 ) ) );
           program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, .5, 500 );
         }
 
             // Update persistent matrix state:
-        this.cube_1.post_multiply( Mat4.rotation( this.spin * dt * 30 / 60 * 2*Math.PI, [ 1,0,0 ] ) );
-        this.cube_2.post_multiply( Mat4.rotation( this.spin * dt * 20 / 60 * 2*Math.PI, [ 0,1,0 ] ) );
+        this.cube_1.post_multiply( Mat4.rotation( this.spin * dt * 30 / 60 * 2*Math.PI,   1,0,0 ) );
+        this.cube_2.post_multiply( Mat4.rotation( this.spin * dt * 20 / 60 * 2*Math.PI,   0,1,0 ) );
 
                                           // Perform two rendering passes.  The first one we erase and 
                                           // don't display after using to it generate our texture.

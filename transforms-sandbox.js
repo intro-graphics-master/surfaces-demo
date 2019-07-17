@@ -1,7 +1,7 @@
 import {tiny, defs} from './common.js';
 
                                                   // Pull these names into this module's scope for convenience:
-const { Vec, Mat, Mat4, Color, Light, Shape, Material, Shader, Scene } = tiny;
+const { vec3, vec4, color, Mat4, Light, Shape, Material, Shader, Texture, Scene } = tiny;
 const { Triangle, Square, Tetrahedron, Windmill, Cube, Subdivision_Sphere } = defs;
 
 export class Transforms_Sandbox_Base extends Scene
@@ -30,9 +30,9 @@ export class Transforms_Sandbox_Base extends Scene
                                                   // appearance of particular materials can be tweaked via these numbers.
       const phong = new defs.Phong_Shader();
       this.materials = { plastic: new Material( phong,
-                                    { ambient: .2, diffusivity: 1, specularity: .5, color: Color.of( .9,.5,.9,1 ) } ),
+                                    { ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) } ),
                            metal: new Material( phong, 
-                                    { ambient: .2, diffusivity: 1, specularity:  1, color: Color.of( .9,.5,.9,1 ) } ) };
+                                    { ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) } ) };
     }
   make_control_panel()
     {                                 // make_control_panel(): Sets up a panel of interactive HTML elements, including
@@ -62,7 +62,7 @@ export class Transforms_Sandbox_Base extends Scene
                     // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() and
                     // orthographic() automatically generate valid matrices for one.  The input arguments of
                     // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
-          program_state.set_camera( Mat4.translation([ 0,3,-10 ]) );
+          program_state.set_camera( Mat4.translation( 0,3,-10 ) );
           program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 100 );
         }
 
@@ -70,8 +70,8 @@ export class Transforms_Sandbox_Base extends Scene
                                                 // the shader when coloring shapes.  See Light's class definition for inputs.
       const t = this.t = program_state.animation_time/1000;
       const angle = Math.sin( t );
-      const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
-      program_state.lights = [ new Light( light_position, Color.of( 1,1,1,1 ), 1000000 ) ];
+      const light_position = Mat4.rotation( angle,   1,0,0 ).times( vec4( 0,-1,1,0 ) );
+      program_state.lights = [ new Light( light_position, color( 1,1,1,1 ), 1000000 ) ];
     }
 }
 
@@ -110,7 +110,7 @@ export class Transforms_Sandbox extends Transforms_Sandbox_Base
                                                   // translation(), scale(), and rotation() to generate matrices, and the 
                                                   // function times(), which generates products of matrices.
 
-      const blue = Color.of( 0,0,1,1 ), yellow = Color.of( 1,1,0,1 );
+      const blue = color( 0,0,1,1 ), yellow = color( 1,1,0,1 );
 
                                     // Variable model_transform will be a local matrix value that helps us position shapes.
                                     // It starts over as the identity every single frame - coordinate axes at the origin.
@@ -126,12 +126,12 @@ export class Transforms_Sandbox extends Transforms_Sandbox_Base
 
                                                      // Position the root shape.  For this example, we'll use a box 
                                                      // shape, and place it at the coordinate origin 0,0,0:
-      model_transform = model_transform.times( Mat4.translation([ 0,0,0 ]) );
+      model_transform = model_transform.times( Mat4.translation( 0,0,0 ) );
                                                                                               // Draw the top box:
       this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
       
                                                      // Tweak our coordinate system downward 2 units for the next shape.
-      model_transform = model_transform.times( Mat4.translation([ 0, -2, 0 ]) );
+      model_transform = model_transform.times( Mat4.translation( 0, -2, 0 ) );
                                                                            // Draw the ball, a child of the hierarchy root.
                                                                            // The ball will have its own children as well.
       this.shapes.ball.draw( context, program_state, model_transform, this.materials.metal.override( blue ) );
@@ -145,7 +145,7 @@ export class Transforms_Sandbox extends Transforms_Sandbox_Base
                                                       // Spin our current coordinate frame as a function of time.  Only do
                                                       // this movement if the button on the page has not been toggled off.
       if( !this.hover )
-        model_transform = model_transform.times( Mat4.rotation( t, Vec.of( 0,1,0 ) ) )
+        model_transform = model_transform.times( Mat4.rotation( t,   0,1,0 ) )
 
                                                       // Perform three transforms in a row.
                                                       // Rotate the coordinate frame counter-clockwise by 1 radian,
@@ -154,9 +154,9 @@ export class Transforms_Sandbox extends Transforms_Sandbox_Base
                                                       // That translation is enough for the box and ball volume to miss
                                                       // one another (new box radius = 2, ball radius = 1, coordinate
                                                       // frame axis is currently doubled in size).
-      model_transform   = model_transform.times( Mat4.rotation( 1, Vec.of( 0,0,1 ) ) )
-                                         .times( Mat4.scale      ([ 1,   2, 1 ]) )
-                                         .times( Mat4.translation([ 0,-1.5, 0 ]) );
+      model_transform   = model_transform.times( Mat4.rotation( 1,     0,0,1 ) )
+                                         .times( Mat4.scale      ( 1,   2, 1 ) )
+                                         .times( Mat4.translation( 0,-1.5, 0 ) );
                                                                                     // Draw the bottom (child) box:
       this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
 

@@ -323,7 +323,7 @@ class Mat4 extends Matrix
       if( !x.every( i => i==i ) )                  
         throw "Two parallel vectors were given";
       z.scale_by( -1 );                               // Enforce right-handed coordinate system.                                   
-      return Mat4.translation([ -x.dot( eye ), -y.dot( eye ), -z.dot( eye ) ])
+      return Mat4.translation( -x.dot( eye ), -y.dot( eye ), -z.dot( eye ) )
              .times( Matrix.of( x.to4(0), y.to4(0), z.to4(0), vec4( 0,0,0,1 ) ) );
     }
   static orthographic( left, right, bottom, top, near, far )

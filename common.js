@@ -334,7 +334,7 @@ const Grid_Sphere = defs.Grid_Sphere =
 class Grid_Sphere extends Shape                  // With lattitude / longitude divisions; this means singularities are at 
   { constructor( rows, columns, texture_range )         // the mesh's top and bottom.  Subdivision_Sphere is a better alternative.
       { super( "position", "normal", "texture_coord" );
-        const semi_circle_points = Array( rows ).fill( Vec.of( 0,0,1 ) ).map( (x,i,a) =>
+        const semi_circle_points = Array( rows ).fill( vec3( 0,0,1 ) ).map( (x,i,a) =>
                                      Mat4.rotation( i/(a.length-1) * Math.PI,   0,1,0 ).times( x.to4(1) ).to3() );
         
         Surface_Of_Revolution.insert_transformed_copy_into( this, [ rows, columns, semi_circle_points, texture_range ] );
@@ -350,19 +350,22 @@ class Closed_Cone extends Shape     // Combine a cone tip and a regular polygon 
 
 const Rounded_Closed_Cone = defs.Rounded_Closed_Cone =
 class Rounded_Closed_Cone extends Surface_Of_Revolution   // An alternative without two separate sections
-  { constructor( rows, columns, texture_range ) { super( rows, columns, Vec.cast( [0, 0, 1], [1, 0, -1], [0, 0, -1] ), texture_range ) ; } }
+  { constructor( rows, columns, texture_range ) { super( rows, columns, [ vec3( 0,0,1 ), vec3( 1,0,-1 ), vec3( 0,0,-1 ) ], texture_range ) ; } }
 
 const Capped_Cylinder = defs.Capped_Cylinder =
 class Capped_Cylinder extends Shape                // Combine a tube and two regular polygons to make a closed cylinder.
   { constructor( rows, columns, texture_range )           // Flat shade this to make a prism, where #columns = #sides.
       { super( "position", "normal", "texture_coord" );
         Cylindrical_Tube  .insert_transformed_copy_into( this, [ rows, columns, texture_range ] );
-        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ],                                              Mat4.translation( 0,0,.5 ) );
+        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ],                                          Mat4.translation( 0,0,.5 ) );
         Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ], Mat4.rotation( Math.PI,   0,1,0 ).times( Mat4.translation( 0,0,.5 ) ) ); } }
 
 const Rounded_Capped_Cylinder = defs.Rounded_Capped_Cylinder =
 class Rounded_Capped_Cylinder extends Surface_Of_Revolution   // An alternative without three separate sections
-  { constructor ( rows, columns, texture_range ) { super( rows, columns, Vec.cast( [0, 0, .5], [1, 0, .5], [1, 0, -.5], [0, 0, -.5] ), texture_range ); } }
+  { constructor ( rows, columns, texture_range ) 
+    { super( rows, columns, [ vec3( 0,0,.5 ), vec3( 1,0,.5 ), vec3( 1,0,-.5 ), vec3( 0,0,-.5 ) ], texture_range )
+    } 
+  }
   
   
 const Axis_Arrows = defs.Axis_Arrows =

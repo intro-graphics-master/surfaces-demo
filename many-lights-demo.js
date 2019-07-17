@@ -46,6 +46,8 @@ export class Many_Lights_Demo extends Scene
                                             // Draw the box:
           this.shapes.cube.draw( context, program_state, Mat4.translation( ...p ).times( Mat4.scale( .3,1,.3 ) ), this.brick )
         } );
+      if( !program_state.animate || program_state.animation_delta_time > 500 )
+        return;
                               // Move some lights forward along columns, then bound them to a range.
       for( const [key,val] of Object.entries( this.column_lights ) )
         { this.column_lights[key][2] -= program_state.animation_delta_time/50;

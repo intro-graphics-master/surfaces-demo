@@ -1,6 +1,6 @@
 import {tiny, defs} from './common.js';
                                                   // Pull these names into this module's scope for convenience:
-const { Vec, Mat, Mat4, Color, Light, Shape, Material, Shader, Texture, Scene } = tiny;
+const { Vector3, vec3, vec4, color, Mat4, Light, Shape, Material, Shader, Texture, Scene } = tiny;
 const { Triangle, Square, Tetrahedron, Windmill, Cube, Subdivision_Sphere } = defs;
 
 export class Surfaces_Demo extends Scene
@@ -29,23 +29,23 @@ export class Surfaces_Demo extends Scene
         this[ "construct_scene_" + scene_id ] ();
     }
   construct_scene_0()
-    { const initial_corner_point = Vec.of( -1,-1,0 );
+    { const initial_corner_point = vec3( -1,-1,0 );
                           // These two callbacks will step along s and t of the first sheet:
-      const row_operation = (s,p) => p ? Mat4.translation([ 0,.2,0 ]).times(p.to4(1)).to3() 
+      const row_operation = (s,p) => p ? Mat4.translation( 0,.2,0 ).times(p.to4(1)).to3() 
                                        : initial_corner_point;
-      const column_operation = (t,p) => Mat4.translation([ .2,0,0 ]).times(p.to4(1)).to3();
+      const column_operation = (t,p) =>  Mat4.translation( .2,0,0 ).times(p.to4(1)).to3();
                           // These two callbacks will step along s and t of the second sheet:
-      const row_operation_2    = (s,p)   => Vec.of(    -1,2*s-1,Math.random()/2 );
-      const column_operation_2 = (t,p,s) => Vec.of( 2*t-1,2*s-1,Math.random()/2 );
+      const row_operation_2    = (s,p)   => vec3(    -1,2*s-1,Math.random()/2 );
+      const column_operation_2 = (t,p,s) => vec3( 2*t-1,2*s-1,Math.random()/2 );
 
       this.shapes = { sheet : new defs.Grid_Patch( 10, 10, row_operation, column_operation ),
                       sheet2: new defs.Grid_Patch( 10, 10, row_operation_2, column_operation_2 ) };      
     }
   construct_scene_1()
-    { const initial_corner_point = Vec.of( -1,-1,0 );
-      const row_operation = (s,p) => p ? Mat4.translation([ 0,.2,0 ]).times(p.to4(1)).to3() 
+    { const initial_corner_point = vec3( -1,-1,0 );
+      const row_operation = (s,p) => p ? Mat4.translation( 0,.2,0 ).times(p.to4(1)).to3() 
                                        : initial_corner_point;
-      const column_operation = (t,p) => Mat4.translation([ .2,0,0 ]).times(p.to4(1)).to3();
+      const column_operation = (t,p) =>  Mat4.translation( .2,0,0 ).times(p.to4(1)).to3();
       this.shapes = { sheet : new defs.Grid_Patch( 10, 10, row_operation, column_operation ) };
     }
   construct_scene_2()
@@ -53,21 +53,21 @@ export class Surfaces_Demo extends Scene
                     hexagon : new defs.Regular_2D_Polygon( 1, 5 ),
                        cone : new defs.Cone_Tip          ( 4, 10,  [[0,2],[0,1]] ),
                        tube : new defs.Cylindrical_Tube  ( 1, 10,  [[0,2],[0,1]] ),
-                       ball : new defs.Grid_Sphere       ( 6, 6,  [[0,2],[0,1]] ),
+                       ball : new defs.Grid_Sphere       ( 6, 6,   [[0,2],[0,1]] ),
                      donut2 : new ( defs.Torus.prototype.make_flat_shaded_version() )( 20, 20, [[0,2],[0,1]] ),
                     };
     }
   construct_scene_3()
-    { const points = Vec.cast( [0,0,.8], [.5,0,1], [.5,0,.8], [.4,0,.7], [.4,0,.5], [.5,0,.4], [.5,0,-1], [.4,0,-1.5], [.25,0,-1.8], [0,0,-1.7] );
+    { const points = Vector3.cast( [0,0,.8], [.5,0,1], [.5,0,.8], [.4,0,.7], [.4,0,.5], [.5,0,.4], [.5,0,-1], [.4,0,-1.5], [.25,0,-1.8], [0,0,-1.7] );
 
       this.shapes = { bullet: new defs.Surface_Of_Revolution( 9, 9, points ) };
 
       const phong    = new defs.Phong_Shader( 1 );
-      this.solid     = new Material( phong, { diffusivity: .5, smoothness: 800, color: Color.of( .7,.8,.6,1 ) } );
+      this.solid     = new Material( phong, { diffusivity: .5, smoothness: 800, color: color( .7,.8,.6,1 ) } );
     }
   construct_scene_4()
     { this.shapes = { axis : new defs.Axis_Arrows(),
-                      ball : new defs.Subdivision_Sphere(3),
+                      ball : new defs.Subdivision_Sphere( 3 ),
                        box : new defs.Cube(),
                     cone_0 : new defs.Closed_Cone     ( 4, 10, [[ .67, 1  ], [ 0,1 ]] ),
                     tube_0 : new defs.Cylindrical_Tube( 7, 7,  [[ .67, 1  ], [ 0,1 ]] ),
@@ -87,21 +87,21 @@ export class Surfaces_Demo extends Scene
     }
   construct_scene_6()
     { // Some helper arrays of points located along curves.  We'll extrude these into surfaces:
-      let square_array = Vec.cast( [ 1,0,-1 ], [ 0,1,-1 ], [ -1,0,-1 ], [ 0,-1,-1 ], [ 1,0,-1 ] ),
-            star_array = Array(19).fill( Vec.of( 1,0,-1 ) );
+      let square_array = Vector3.cast( [ 1,0,-1 ], [ 0,1,-1 ], [ -1,0,-1 ], [ 0,-1,-1 ], [ 1,0,-1 ] ),
+            star_array = Array(19).fill( vec3( 1,0,-1 ) );
 
       // Fill in the correct points for a 1D star curve:
 
       star_array   =   star_array.map( (x,i,a) => 
-                    Mat4.rotation( i/(a.length-1) * 2*Math.PI, Vec.of( 0,0,1 ) )
-            .times( Mat4.translation([ (i%2)/2,0,0 ]) )
+                    Mat4.rotation( i/(a.length-1) * 2*Math.PI,   0,0,1 )
+            .times( Mat4.translation( (i%2)/2,0,0 ) )
             .times( x.to4(1) ).to3() );
 
       // The square is transformed away from the origin:
 
       square_array = square_array.map( (x,i,a) =>
-                           a[i] = Mat4.rotation( .5*Math.PI, Vec.of( 1,1,1 ) )
-                          .times( Mat4.translation([0,0,2]) )
+                           a[i] = Mat4.rotation( .5*Math.PI,   1,1,1 )
+                          .times( Mat4.translation( 0,0,2 ) )
                           .times( x.to4(1) ).to3() );
 
       // Now that we have two 1D curves, let's make a surface between them:
@@ -119,12 +119,12 @@ export class Surfaces_Demo extends Scene
     { 
       if( !context.scratchpad.controls ) 
         { this.children.push( context.scratchpad.controls = new defs.Movement_Controls() );
-          program_state.set_camera( Mat4.translation([ 0,0,-3 ]) );
+          program_state.set_camera( Mat4.translation( 0,0,-3 ) );
         }
                         // Draw the sheets, flipped 180 degrees so their normals point at us.
-      const r = Mat4.rotation( Math.PI, [ 0,1,0 ] ).times( this.r );
-      this.shapes.sheet .draw( context, program_state, Mat4.translation([ -1.5,0,0]).times(r), this.material );
-      this.shapes.sheet2.draw( context, program_state, Mat4.translation([  1.5,0,0]).times(r), this.material );
+      const r = Mat4.rotation( Math.PI,   0,1,0 ).times( this.r );
+      this.shapes.sheet .draw( context, program_state, Mat4.translation( -1.5,0,0 ).times(r), this.material );
+      this.shapes.sheet2.draw( context, program_state, Mat4.translation(  1.5,0,0 ).times(r), this.material );
     }
   display_scene_1( context, program_state )
     { 
@@ -132,7 +132,7 @@ export class Surfaces_Demo extends Scene
       
                                                       // Update the JavaScript-side shape with new vertices:
       this.shapes.sheet.arrays.position.forEach( (p,i,a) => 
-                      a[i] = Vec.of( p[0], p[1], .15*random( i/a.length ) ) );
+                      a[i] = vec3( p[0], p[1], .15*random( i/a.length ) ) );
                                                      // Update the normals to reflect the surface's new arrangement.
                                                      // This won't be perfect flat shading because vertices are shared.
       this.shapes.sheet.flat_shade();
@@ -144,35 +144,35 @@ export class Surfaces_Demo extends Scene
       this.shapes.sheet.copy_onto_graphics_card( context.context, ["position","normal"], false );      
     }
   display_scene_2( context, program_state )
-    { const model_transform = Mat4.translation([ -5,0,-2 ]);
+    { const model_transform = Mat4.translation( -5,0,-2 );
                                           // Draw all the shapes stored in this.shapes side by side.
       for( let s of Object.values( this.shapes ) )
         { s.draw( context, program_state, model_transform.times( this.r ), this.material );
-          model_transform.post_multiply( Mat4.translation([ 2,0,0 ]) );
+          model_transform.post_multiply( Mat4.translation( 2,0,0 ) );
         }
     }
   display_scene_3( context, program_state )
-    { const model_transform = Mat4.rotation( program_state.animation_time/5000, [ 0,1,0 ]);
+    { const model_transform = Mat4.rotation( program_state.animation_time/5000,   0,1,0 );
       this.shapes.bullet.draw( context, program_state, model_transform.times( this.r ), this.solid );
     }
   display_scene_4( context, program_state )
     {                                       // First, draw the compound axis shape all at once:
-      this.shapes.axis.draw( context, program_state, Mat4.translation([ 2,-1,-2 ]), this.material );
+      this.shapes.axis.draw( context, program_state, Mat4.translation( 2,-1,-2 ), this.material );
       
           // Manually recreate the above compound Shape out of individual components:
-      const base = Mat4.translation([ -1,-1,-2 ]);
-      const ball_matrix = base.times( Mat4.rotation( Math.PI/2, Vec.of( 0,1,0 ) ).times( Mat4.scale([ .25, .25, .25 ]) ) );
+      const base = Mat4.translation( -1,-1,-2 );
+      const ball_matrix = base.times( Mat4.rotation( Math.PI/2,   0,1,0 ).times( Mat4.scale( .25, .25, .25 ) ) );
       this.shapes.ball.draw( context, program_state, ball_matrix, this.material );
       const matrices = [ Mat4.identity(), 
-                         Mat4.rotation(-Math.PI/2, Vec.of(1,0,0)).times( Mat4.scale([  1, -1, 1 ])),
-                         Mat4.rotation( Math.PI/2, Vec.of(0,1,0)).times( Mat4.scale([ -1,  1, 1 ])) ];
+                         Mat4.rotation(-Math.PI/2,  1,0,0 ).times( Mat4.scale(  1,-1,1 )),
+                         Mat4.rotation( Math.PI/2,  0,1,0 ).times( Mat4.scale( -1, 1,1 )) ];
       for( let i = 0; i < 3; i++ )
       { const m = base.times( matrices[i] );
-        const cone_matrix = m.times( Mat4.translation([   0,   0,  2 ]) ).times( Mat4.scale([ .25, .25, .25 ]) ),
-              box1_matrix = m.times( Mat4.translation([ .95, .95, .45]) ).times( Mat4.scale([ .05, .05, .45 ]) ),
-              box2_matrix = m.times( Mat4.translation([ .95,   0, .5 ]) ).times( Mat4.scale([ .05, .05, .4  ]) ),
-              box3_matrix = m.times( Mat4.translation([   0, .95, .5 ]) ).times( Mat4.scale([ .05, .05, .4  ]) ),
-              tube_matrix = m.times( Mat4.translation([   0,   0,  1 ]) ).times( Mat4.scale([  .1,  .1,  2  ]) );
+        const cone_matrix = m.times( Mat4.translation(   0,   0,  2 ) ).times( Mat4.scale( .25, .25, .25 ) ),
+              box1_matrix = m.times( Mat4.translation( .95, .95, .45) ).times( Mat4.scale( .05, .05, .45 ) ),
+              box2_matrix = m.times( Mat4.translation( .95,   0, .5 ) ).times( Mat4.scale( .05, .05, .4  ) ),
+              box3_matrix = m.times( Mat4.translation(   0, .95, .5 ) ).times( Mat4.scale( .05, .05, .4  ) ),
+              tube_matrix = m.times( Mat4.translation(   0,   0,  1 ) ).times( Mat4.scale(  .1,  .1,  2  ) );
         this.shapes[ "cone_"+i ].draw( context, program_state, cone_matrix, this.material );       
         this.shapes.box         .draw( context, program_state, box1_matrix, this.material );    
         this.shapes.box         .draw( context, program_state, box2_matrix, this.material );    
@@ -181,16 +181,16 @@ export class Surfaces_Demo extends Scene
       }
     }
   display_scene_5( context, program_state )
-    { const model_transform = Mat4.translation([ -5,0,-2 ]);
-      const r = Mat4.rotation( program_state.animation_time/3000, [ 1,1,1 ] );
+    { const model_transform = Mat4.translation( -5,0,-2 );
+      const r = Mat4.rotation( program_state.animation_time/3000,   1,1,1 );
                                           // Draw all the shapes stored in this.shapes side by side.
       for( let s of Object.values( this.shapes ) )
         { s.draw( context, program_state, model_transform.times( r ), this.material );
-          model_transform.post_multiply( Mat4.translation([ 2.5,0,0 ]) );
+          model_transform.post_multiply( Mat4.translation( 2.5,0,0 ) );
         }
     }
   display_scene_6( context, program_state )
-    { const model_transform = Mat4.rotation( program_state.animation_time/5000, [ 0,1,0 ]);
+    { const model_transform = Mat4.rotation( program_state.animation_time/5000,   0,1,0 );
       this.shapes.shell.draw( context, program_state, model_transform.times( this.r ), this.material );
     } 
   explain_scene_0( document_element )
@@ -261,17 +261,16 @@ export class Surfaces_Demo extends Scene
   display( context, program_state )
     { 
       program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 100 ); 
-      this.r = Mat4.rotation( -.5*Math.sin( program_state.animation_time/5000 ), [ 1,1,1 ] );
+      this.r = Mat4.rotation( -.5*Math.sin( program_state.animation_time/5000 ),   1,1,1 );
 
       if( this.is_master )
-        { context.canvas.style.display = "none";
-          
+        { context.canvas.style.display = "none";          
                                                     // *** Lights: *** Values of vector or point lights.  They'll be consulted by 
                                                     // the shader when coloring shapes.  See Light's class definition for inputs.
           const t = this.t = program_state.animation_time/1000;
           const angle = Math.sin( t );
-          const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,0,1,0 ) );
-          program_state.lights = [ new Light( light_position, Color.of( 1,1,1,1 ), 1000000 ) ]; 
+          const light_position = Mat4.rotation( angle,   1,0,0 ).times( vec4( 0,0,1,0 ) );
+          program_state.lights = [ new Light( light_position, color( 1,1,1,1 ), 1000000 ) ]; 
         }
       else
         this[ "display_scene_" + this.scene_id ] ( context, program_state );

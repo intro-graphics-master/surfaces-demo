@@ -22,10 +22,10 @@ import { Obj_File_Demo }
 import { Scene_To_Texture_Demo }
   from "./scene-to-texture-demo.js"
 import { Surfaces_Demo }
-  from "./surfaces-demo.js"  ;
+  from "./surfaces-demo.js"
 import { Text_Demo }
-  from "./text-demo.js"  ;
-import { Transforms_Sandbox } 
+  from "./text-demo.js"
+import { Transforms_Sandbox }
   from "./transforms-sandbox.js"
 
 Object.assign( defs,
